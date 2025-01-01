@@ -1,25 +1,31 @@
-#include "Board.h"
 #include <stdio.h>
+#include <string>
+#include <stdexcept>
+#include "Board.h"
 
-const int REQUIRED_NUM_MOVES = 4;
-bool MakeMove(const Board& board, int numMoves);
+const int DEFAULT_NUM_ALLOWED_MOVES = 4;
+static bool MakeMove(const Board& board, int numMoves, int numAllowedMoves);
+static int GetNumAllowedMoves(int argc, char** argv);
 
-int main()
+int main(int argc, char** argv)
 {
+  int numAllowedMoves = GetNumAllowedMoves(argc, argv);
+
   Board board;
-
-  int numMoves = 0;
-
-  // do the first recursive call
-  if (MakeMove(board, numMoves))
+  if (MakeMove(board, 0, numAllowedMoves))
   {
+    board.Print("Initial board        :");
     printf("Success!\n");
+  }
+  else
+  {
+    printf("Failed to find a solution for %i allowed moves.", numAllowedMoves);
   }
 
   return 0;
 }
 
-bool MakeMove(const Board& board, int numMoves)
+static bool MakeMove(const Board& board, int numMoves, int numAllowedMoves)
 {
   // we go through every pair of coins...
   for (int i = 0; i < 15; i++)
@@ -34,56 +40,62 @@ bool MakeMove(const Board& board, int numMoves)
         // make a new board with this move
         Board newBoard(board);
         newBoard.Move(i, moveTo);
-        printf("Move: %d to %d\n", i, moveTo);
-        newBoard.Print();
-        printf("\n");
 
-        if (numMoves + 1 == REQUIRED_NUM_MOVES)
+        if (numMoves + 1 == numAllowedMoves)
         {
           if (newBoard.IsComplete())
           {
-            printf("Found Match!\n");
-            printf("The final move was: \n");
-            printf("Move: %d to %d giving: \n", i, moveTo);
-            newBoard.Print();
-            printf("\n");
+            newBoard.Print(i, moveTo);
             return true;
-          }
-          else
-          {
-            printf("4th Move did not succeed; back tracking and trying another...\n");
           }
         }
         else
         {
           // not too many moves yet - try another
-          bool isCorrect = MakeMove(newBoard, numMoves + 1);
+          bool isCorrect = MakeMove(newBoard, numMoves + 1, numAllowedMoves);
 
           if (isCorrect)
           {
             // this was a good move; return
-            printf("\n");
-            printf("The previous move was: \n");
-            printf("Move: %d to %d giving: \n", i, moveTo);
-            newBoard.Print();
-            printf("\n");
+            newBoard.Print(i, moveTo);
             return true;
-          }
-          else
-          {
-            // this was not a good move - try a different one (at this level)
-            printf("Failed; going back to:\n");
-            board.Print();
-            printf("\n");
           }
         }
 
         moveTo = board.GetFirstEmptyBlock(moveTo + 1);
-
       }
     }
   }
 
   // if we have gone through all possibilities without returning then return false
   return false;
+}
+
+static int GetNumAllowedMoves(int argc, char** argv)
+{
+  if (argc < 2)
+  {
+    return DEFAULT_NUM_ALLOWED_MOVES;
+  }
+
+  int arg = 0;
+  try
+  {
+    arg = std::stoi(argv[1]);
+  }
+  catch (const std::invalid_argument&)
+  {
+    int arg = 0;
+  }
+  catch (const std::out_of_range&)
+  {
+    int arg = 0;
+  }
+
+  if (arg <= 0)
+  {
+    return DEFAULT_NUM_ALLOWED_MOVES;
+  }
+
+  return arg;
 }

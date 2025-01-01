@@ -1,3 +1,5 @@
+#include <string>
+
 class Board
 {
 
@@ -21,8 +23,8 @@ public:
 
   bool IsComplete() const;
 
-  void Print() const;
-
+  void Print(const std::string& message) const;
+  void Print(int moveFrom, int moveTo) const;
 
 private:
   Value m_values[16];

@@ -1,5 +1,5 @@
 #include "Board.h"
-#include <stdio.h>
+#include <format>
 
 Board::Board()
 {
@@ -123,10 +123,9 @@ bool Board::IsComplete() const
   return true;
 }
 
-
-void Board::Print() const
+void Board::Print(const std::string& message) const
 {
-  printf("[ ");
+  printf("%s [", message.c_str());
   for (int i = 0; i < 16; i++)
   {
     switch (GetValue(i))
@@ -137,4 +136,10 @@ void Board::Print() const
     }
   }
   printf("]\n");
+}
+
+void Board::Print(int moveFrom, int moveTo) const
+{
+  std::string message = std::format("Move: {:02d} to {:02d} giving:", moveFrom, moveTo);
+  Board::Print(message);
 }
